@@ -296,7 +296,78 @@ gdelt_apple %>% select(id, title, body_raw, body_fixed) %>% head()
 
 write.csv(gdelt_apple, "C:/Users/User/Desktop/CienciaDatos_Econometria/P.Final/gdelt_apple.csv", row.names = FALSE)
 
-gdelt_apple <- gdelt_apple %>% select(-body_raw)
+#Cargar la base de datos
+gdelt_apple <- read_csv("C:/Users/User/Desktop/CienciaDatos_Econometria/P.Final/gdelt_apple.csv")
+
+gdelt_apple <- gdelt_apple %>%
+  select(-body_raw) %>%      # elimina la columna body_raw
+  filter(!is.na(body_fixed)) # mantiene solo filas donde body_fixed tiene texto
+
+nrow(gdelt_apple)
+head(gdelt_apple)
+
+# Limpiar errores y copyrights
+gdelt_apple_clean <- gdelt_apple %>%
+  mutate(
+    body_fixed = body_fixed %>%
+      # quitar "Oops, something went wrong" al inicio
+      sub("^Oops, something went wrong\\s*", "", .) %>%
+      # quitar líneas de copyright genéricas
+      gsub("© [0-9]{4} .*?\\.\\s+ALL RIGHTS RESERVED\\.", "", .) %>%
+      # quitar copyright específico de Benzinga
+      gsub("© 2025 Benzinga\\.com\\. Benzinga does not provide investment advice\\. All rights reserved\\.", "", ., fixed = TRUE) %>%
+      # quitar espacios iniciales y finales
+      str_trim(),
+    # detectar idioma de título y cuerpo
+    lang_title = cld3::detect_language(title),
+    lang_body  = cld3::detect_language(body_fixed)
+  ) %>%
+  # mantener solo inglés y body_fixed no vacío
+  filter(
+    lang_title == "en",
+    lang_body  == "en",
+    !is.na(body_fixed),
+    nchar(body_fixed) > 0
+  )
+
+gdelt_apple_clean <- gdelt_apple %>%
+  filter(!str_detect(body_fixed, "Benzinga"))
+
+# Revisar resultados
+nrow(gdelt_apple_clean)
+colnames(gdelt_apple)
+
+# Asegurarse de que body_fixed sea de tipo character
+gdelt_apple$body_fixed <- as.character(gdelt_apple$body_fixed)
+
+# Convertir cada fila en palabras individuales
+words_df <- gdelt_apple %>%
+  unnest_tokens(word, body_fixed)
+
+word_counts <- words_df %>%
+  count(word, sort = TRUE)
+
+data("stop_words")  # Stop words en inglés
+word_counts <- word_counts %>%
+  anti_join(stop_words, by = "word")  # Elimina palabras comunes tipo "the", "and", etc.
+
+head(word_counts, 50)  # Top 20 palabras más repetidas
+
+library(wordcloud)
+
+set.seed(123)  # Para reproducibilidad
+wordcloud(words = word_counts$word,
+          freq = word_counts$n,
+          max.words = 100,
+          colors = brewer.pal(8, "Dark2"))
+
+
+
+# Lista de términos relacionados con Apple
+terms_to_exclude <- c("Apple", "AAPL", "iPhone", "iPad", "Mac", "Apple Inc","aaple's",'apple','aapl')
+pattern <- paste(terms_to_exclude, collapse = "|")  # Crea expresión regular "Apple|AAPL|iPhone|..."
+gdelt_no_apple <- subset(gdelt_apple, !grepl(pattern, body_fixed, ignore.case = TRUE))
+
 
 
 
