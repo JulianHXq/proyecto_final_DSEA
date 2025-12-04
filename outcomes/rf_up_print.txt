@@ -1,0 +1,14 @@
+Ranger result
+
+Call:
+ ranger(dependent.variable.name = "target_up", data = cbind(target_up = y_up,      X), num.trees = 500, importance = "impurity", probability = TRUE) 
+
+Type:                             Probability estimation 
+Number of trees:                  500 
+Sample size:                      147 
+Number of independent variables:  62 
+Mtry:                             7 
+Target node size:                 10 
+Variable importance mode:         impurity 
+Splitrule:                        gini 
+OOB prediction error (Brier s.):  0.04147812 

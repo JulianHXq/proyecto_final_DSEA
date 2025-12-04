@@ -1,0 +1,14 @@
+Ranger result
+
+Call:
+ ranger(formula = target_down ~ ., data = data.frame(target_down = tokens_tf_filtered_valid$target_down,      X), num.trees = 500, importance = "impurity", probability = TRUE) 
+
+Type:                             Probability estimation 
+Number of trees:                  500 
+Sample size:                      147 
+Number of independent variables:  62 
+Mtry:                             7 
+Target node size:                 10 
+Variable importance mode:         impurity 
+Splitrule:                        gini 
+OOB prediction error (Brier s.):  0.0143017 
