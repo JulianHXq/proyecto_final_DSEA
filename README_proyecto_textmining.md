@@ -142,7 +142,6 @@ Guardados en `/outcomes/`.
 
 # 📚 9. Modelos
 
--   LDA\
 -   CAR\
 -   GRF\
 -   Clasificación UP/DOWN
